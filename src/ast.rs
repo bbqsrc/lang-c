@@ -1128,6 +1128,12 @@ pub enum ExternalDeclaration {
     Declaration(Node<Declaration>),
     StaticAssert(Node<StaticAssert>),
     FunctionDefinition(Node<FunctionDefinition>),
+    Directive(Node<Directive>),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Directive {
+    pub value: String,
 }
 
 /// Function definition

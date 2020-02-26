@@ -1293,7 +1293,14 @@ fn test_directives() {
 "#,
             &mut Env::new()
         ),
-        Ok(TranslationUnit(vec![]))
+        Ok(TranslationUnit(vec![
+            Node {
+                node: ExternalDeclaration::Directive(
+                    Node { node: Directive { value: " 1 \"<stdin>\"".into() }, span: Span::none() }
+                ),
+                span: Span::none() 
+            }
+        ]))
     );
 }
 

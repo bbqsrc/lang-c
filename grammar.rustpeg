@@ -27,7 +27,9 @@ cs1<ex> = e:ex ++ (_ "," _) { e }
 
 _ = #quiet<("\n" directive? / [ \t])*>
 
-directive = "#" [^\n]*
+directive -> Directive = "#" d:$([^\n]*) {
+    Directive { value: d.into() }
+}
 
 ////
 // 6.4.1 Keywords
@@ -1048,12 +1050,13 @@ jump_statement -> Statement =
 scoped<e> = ({ env.enter_scope(); }) e:e? {? env.leave_scope(); e.ok_or("") }
 
 pub translation_unit -> TranslationUnit =
-    directive? _ d:list0<node<external_declaration>> _ { TranslationUnit(d) }
+    d:list0<node<external_declaration>> _ { TranslationUnit(d) }
 
 external_declaration -> ExternalDeclaration =
     d:declaration { ExternalDeclaration::Declaration(d) } /
     s:static_assert { ExternalDeclaration::StaticAssert(s) } /
-    d:scoped<node<function_definition>> { ExternalDeclaration::FunctionDefinition(d) }
+    d:scoped<node<function_definition>> { ExternalDeclaration::FunctionDefinition(d) } /
+    d:node<directive> { ExternalDeclaration::Directive(d) }
 
 function_definition -> FunctionDefinition =
     gnu<K<"__extension__">>?
