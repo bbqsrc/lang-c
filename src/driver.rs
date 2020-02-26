@@ -63,6 +63,8 @@ pub enum Flavor {
     GnuC11,
     /// Standard C11 with Clang extensions
     ClangC11,
+    /// Standard C11 with MSVC extensions
+    MsvcC11,
 }
 
 /// Result of a successful parse
@@ -162,6 +164,7 @@ pub fn parse_preprocessed(config: &Config, source: String) -> Result<Parse, Synt
         Flavor::StdC11 => Env::with_core(),
         Flavor::GnuC11 => Env::with_gnu(),
         Flavor::ClangC11 => Env::with_clang(),
+        Flavor::MsvcC11 => Env::with_msvc(),
     };
 
     match translation_unit(&source, &mut env) {

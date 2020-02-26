@@ -62,13 +62,18 @@ impl Env {
     }
 
     pub fn with_msvc() -> Env {
+        let mut typenames = HashSet::default();
         let mut reserved = HashSet::default();
+        typenames.insert("__int8".to_owned());
+        typenames.insert("__int16".to_owned());
+        typenames.insert("__int32".to_owned());
+        typenames.insert("__int64".to_owned());
         reserved.extend(strings::RESERVED_C11.iter());
         Env {
             extensions_gnu: false,
             extensions_clang: false,
             extensions_msvc: true,
-            typenames: vec![HashSet::default()],
+            typenames: vec![typenames],
             reserved: reserved,
         }
     }
