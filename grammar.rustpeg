@@ -460,7 +460,8 @@ declaration_specifier0 -> DeclarationSpecifier =
     s:type_qualifier { DeclarationSpecifier::TypeQualifier(s) } /
     s:function_specifier { DeclarationSpecifier::Function(s) } /
     s:alignment_specifier { DeclarationSpecifier::Alignment(s) } /
-    s:gnu<attribute_specifier> { DeclarationSpecifier::Extension(s) }
+    s:gnu<attribute_specifier> { DeclarationSpecifier::Extension(s) } /
+    s:msvc<msvc_declspec_specifier> { DeclarationSpecifier::Extension(s) }
 
 init_declarator -> InitDeclarator =
     d:declarator _ e:gnu<init_declarator_gnu>? _ i:node<init_declarator_init>?
@@ -1060,6 +1061,17 @@ gnu<E> = &gnu_guard e:E { e }
 
 gnu_guard = {? if env.extensions_gnu { Ok(()) } else { Err("gnu extensions disabled") } }
 
+msvc_declspec_specifier -> Vec<Node<Extension>> =
+    K<"__declspec"> _ "(" _ a:cs0<node<msvc_attribute>> _ ")" { a }
+
+msvc_attribute -> Extension =
+    n:node<attribute_name> _ p:attribute_parameters? {
+        Extension::Attribute(Attribute {
+            name: n,
+            arguments: p.unwrap_or_default(),
+        })
+    }
+
 ////
 // GNU attributes
 ////
@@ -1279,3 +1291,11 @@ ts18661_float_suffix -> TS18661FloatType =
 clang<E> = &clang_guard e:E { e }
 
 clang_guard = {? if env.extensions_clang { Ok(()) } else { Err("clang extensions disabled") } }
+
+////
+// MSVC extensions
+////
+
+msvc<E> = &msvc_guard e:E { e }
+
+msvc_guard = {? if env.extensions_msvc { Ok(()) } else { Err("msvc extensions disabled") } }

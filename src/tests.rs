@@ -1872,6 +1872,12 @@ fn test_ts18661_float() {
 }
 
 #[test]
+fn test_msvc_extension() {
+    use parser::translation_unit;
+    translation_unit("__declspec(deprecated) int test();", &mut Env::with_msvc()).unwrap();
+}
+
+#[test]
 fn test_gnu_extension() {
     use ast::TypeSpecifier::Long;
     use parser::translation_unit;

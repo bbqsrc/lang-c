@@ -8,6 +8,7 @@ pub struct Env {
     pub typenames: Vec<HashSet<String>>,
     pub extensions_gnu: bool,
     pub extensions_clang: bool,
+    pub extensions_msvc: bool,
     pub reserved: HashSet<&'static str>,
 }
 
@@ -23,6 +24,7 @@ impl Env {
         Env {
             extensions_gnu: false,
             extensions_clang: false,
+            extensions_msvc: false,
             typenames: Vec::new(),
             reserved: reserved,
         }
@@ -37,6 +39,7 @@ impl Env {
         Env {
             extensions_gnu: true,
             extensions_clang: false,
+            extensions_msvc: false,
             typenames: vec![typenames],
             reserved: reserved,
         }
@@ -52,7 +55,20 @@ impl Env {
         Env {
             extensions_gnu: true,
             extensions_clang: true,
+            extensions_msvc: false,
             typenames: vec![typenames],
+            reserved: reserved,
+        }
+    }
+
+    pub fn with_msvc() -> Env {
+        let mut reserved = HashSet::default();
+        reserved.extend(strings::RESERVED_C11.iter());
+        Env {
+            extensions_gnu: false,
+            extensions_clang: false,
+            extensions_msvc: true,
+            typenames: vec![HashSet::default()],
             reserved: reserved,
         }
     }
