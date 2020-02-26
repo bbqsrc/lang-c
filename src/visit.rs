@@ -450,13 +450,7 @@ pub trait Visit<'ast> {
         visit_function_definition(self, function_definition, span)
     }
 
-    fn visit_directive(
-        &mut self,
-        _directive: &'ast Directive,
-        _span: &'ast Span,
-    ) {
-        
-    }
+    fn visit_directive(&mut self, _directive: &'ast Directive, _span: &'ast Span) {}
 
     fn visit_extension(&mut self, extension: &'ast Extension, span: &'ast Span) {
         visit_extension(self, extension, span)
@@ -466,19 +460,39 @@ pub trait Visit<'ast> {
         visit_attribute(self, attribute, span)
     }
 
-    fn visit_msvc_sal_param_attribute(&mut self, _attribute: &'ast SalParamAttribute, _span: &'ast Span) {
+    fn visit_msvc_sal_param_attribute(
+        &mut self,
+        _attribute: &'ast SalParamAttribute,
+        _span: &'ast Span,
+    ) {
     }
 
-    fn visit_msvc_sal_function_attribute(&mut self, _attribute: &'ast SalFunctionAttribute, _span: &'ast Span) {
+    fn visit_msvc_sal_function_attribute(
+        &mut self,
+        _attribute: &'ast SalFunctionAttribute,
+        _span: &'ast Span,
+    ) {
     }
 
-    fn visit_msvc_sal_field_attribute(&mut self, _attribute: &'ast SalFieldAttribute, _span: &'ast Span) {
+    fn visit_msvc_sal_field_attribute(
+        &mut self,
+        _attribute: &'ast SalFieldAttribute,
+        _span: &'ast Span,
+    ) {
     }
 
-    fn visit_msvc_sal_struct_attribute(&mut self, _attribute: &'ast SalStructAttribute, _span: &'ast Span) {
+    fn visit_msvc_sal_struct_attribute(
+        &mut self,
+        _attribute: &'ast SalStructAttribute,
+        _span: &'ast Span,
+    ) {
     }
 
-    fn visit_msvc_calling_convention(&mut self, _convention: &'ast CallingConvention, _span: &'ast Span) {
+    fn visit_msvc_calling_convention(
+        &mut self,
+        _convention: &'ast CallingConvention,
+        _span: &'ast Span,
+    ) {
     }
 
     fn visit_asm_statement(&mut self, asm_statement: &'ast AsmStatement, span: &'ast Span) {
@@ -621,9 +635,13 @@ pub fn visit_expression<'ast, V: Visit<'ast> + ?Sized>(
         Expression::CompoundLiteral(ref c) => visitor.visit_compound_literal(&c.node, &c.span),
         Expression::SizeOf(ref s) => visitor.visit_type_name(&s.node, &s.span),
         Expression::AlignOf(ref a) => visitor.visit_type_name(&a.node, &a.span),
-        Expression::UnaryOperator(ref u) => visitor.visit_unary_operator_expression(&u.node, &u.span),
+        Expression::UnaryOperator(ref u) => {
+            visitor.visit_unary_operator_expression(&u.node, &u.span)
+        }
         Expression::Cast(ref c) => visitor.visit_cast_expression(&c.node, &c.span),
-        Expression::BinaryOperator(ref b) => visitor.visit_binary_operator_expression(&b.node, &b.span),
+        Expression::BinaryOperator(ref b) => {
+            visitor.visit_binary_operator_expression(&b.node, &b.span)
+        }
         Expression::Conditional(ref c) => visitor.visit_conditional_expression(&c.node, &c.span),
         Expression::Comma(ref comma) => {
             for c in comma.iter() {
@@ -899,10 +917,16 @@ pub fn visit_declaration_specifier<'ast, V: Visit<'ast> + ?Sized>(
         DeclarationSpecifier::StorageClass(ref s) => {
             visitor.visit_storage_class_specifier(&s.node, &s.span)
         }
-        DeclarationSpecifier::TypeSpecifier(ref t) => visitor.visit_type_specifier(&t.node, &t.span),
-        DeclarationSpecifier::TypeQualifier(ref t) => visitor.visit_type_qualifier(&t.node, &t.span),
+        DeclarationSpecifier::TypeSpecifier(ref t) => {
+            visitor.visit_type_specifier(&t.node, &t.span)
+        }
+        DeclarationSpecifier::TypeQualifier(ref t) => {
+            visitor.visit_type_qualifier(&t.node, &t.span)
+        }
         DeclarationSpecifier::Function(ref f) => visitor.visit_function_specifier(&f.node, &f.span),
-        DeclarationSpecifier::Alignment(ref a) => visitor.visit_alignment_specifier(&a.node, &a.span),
+        DeclarationSpecifier::Alignment(ref a) => {
+            visitor.visit_alignment_specifier(&a.node, &a.span)
+        }
         DeclarationSpecifier::Extension(ref e) => {
             for extension in e {
                 visitor.visit_extension(&extension.node, &extension.span);
@@ -1454,9 +1478,7 @@ pub fn visit_external_declaration<'ast, V: Visit<'ast> + ?Sized>(
         ExternalDeclaration::FunctionDefinition(ref f) => {
             visitor.visit_function_definition(&f.node, &f.span)
         }
-        ExternalDeclaration::Directive(ref d) => {
-            visitor.visit_directive(&d.node, &d.span)
-        }
+        ExternalDeclaration::Directive(ref d) => visitor.visit_directive(&d.node, &d.span),
     }
 }
 
@@ -1492,18 +1514,12 @@ pub fn visit_extension<'ast, V: Visit<'ast> + ?Sized>(
         Extension::AvailabilityAttribute(ref a) => {
             visitor.visit_availability_attribute(&a.node, &a.span)
         }
-        Extension::SalParamAttribute(ref a) => {
-            visitor.visit_msvc_sal_param_attribute(a, span)
-        }
+        Extension::SalParamAttribute(ref a) => visitor.visit_msvc_sal_param_attribute(a, span),
         Extension::SalFunctionAttribute(ref a) => {
             visitor.visit_msvc_sal_function_attribute(a, span)
         }
-        Extension::SalFieldAttribute(ref a) => {
-            visitor.visit_msvc_sal_field_attribute(a, span)
-        }
-        Extension::SalStructAttribute(ref a) => {
-            visitor.visit_msvc_sal_struct_attribute(a, span)
-        }
+        Extension::SalFieldAttribute(ref a) => visitor.visit_msvc_sal_field_attribute(a, span),
+        Extension::SalStructAttribute(ref a) => visitor.visit_msvc_sal_struct_attribute(a, span),
     }
 }
 

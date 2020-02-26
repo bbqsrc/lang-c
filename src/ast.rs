@@ -764,7 +764,7 @@ pub enum TypeQualifier {
     /// `_Atomic`
     Atomic,
     /// Calling convention
-    /// 
+    ///
     /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/cpp/calling-conventions)
     CallingConvention(CallingConvention),
 }
@@ -1169,25 +1169,25 @@ pub enum Extension {
     /// [Clang extension](https://clang.llvm.org/docs/AttributeReference.html#availability)
     AvailabilityAttribute(Node<AvailabilityAttribute>),
     /// Source-code annotation language (SAL) parameter attribute
-    /// 
+    ///
     /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
     SalParamAttribute(SalParamAttribute),
     /// Source-code annotation language (SAL) function attribute
-    /// 
+    ///
     /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
     SalFunctionAttribute(SalFunctionAttribute),
     /// Source-code annotation language (SAL) field attribute
-    /// 
+    ///
     /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
     SalFieldAttribute(SalFieldAttribute),
     /// Source-code annotation language (SAL) struct attribute
-    /// 
+    ///
     /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
     SalStructAttribute(SalStructAttribute),
 }
 
 /// Calling convention
-/// 
+///
 /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/cpp/calling-conventions)
 #[derive(Debug, PartialEq, Clone)]
 pub enum CallingConvention {
@@ -1215,7 +1215,7 @@ pub struct Attribute {
 }
 
 /// Source-code annotation language (SAL) struct attribute
-/// 
+///
 /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
 #[derive(Debug, PartialEq, Clone)]
 pub enum SalStructAttribute {
@@ -1223,7 +1223,7 @@ pub enum SalStructAttribute {
 }
 
 /// Source-code annotation language (SAL) field attribute
-/// 
+///
 /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
 #[derive(Debug, PartialEq, Clone)]
 pub enum SalFieldAttribute {
@@ -1245,7 +1245,7 @@ pub enum SalFieldAttribute {
 }
 
 /// Source-code annotation language (SAL) function attribute
-/// 
+///
 /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
 #[derive(Debug, PartialEq, Clone)]
 pub enum SalFunctionAttribute {
@@ -1267,7 +1267,7 @@ pub enum SalFunctionAttribute {
 }
 
 /// Source-code annotation language (SAL) parameter attribute
-/// 
+///
 /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
 #[derive(Debug, PartialEq, Clone)]
 pub enum SalParamAttribute {

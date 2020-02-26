@@ -1293,14 +1293,15 @@ fn test_directives() {
 "#,
             &mut Env::new()
         ),
-        Ok(TranslationUnit(vec![
-            Node {
-                node: ExternalDeclaration::Directive(
-                    Node { node: Directive { value: " 1 \"<stdin>\"".into() }, span: Span::none() }
-                ),
-                span: Span::none() 
-            }
-        ]))
+        Ok(TranslationUnit(vec![Node {
+            node: ExternalDeclaration::Directive(Node {
+                node: Directive {
+                    value: " 1 \"<stdin>\"".into()
+                },
+                span: Span::none()
+            }),
+            span: Span::none()
+        }]))
     );
 }
 
@@ -1906,7 +1907,11 @@ fn test_msvc_calling_convention() {
 #[test]
 fn test_typedef_msvc() {
     use parser::translation_unit;
-    translation_unit("typedef signed __int64 INT64, *PINT64;", &mut Env::with_msvc()).unwrap();
+    translation_unit(
+        "typedef signed __int64 INT64, *PINT64;",
+        &mut Env::with_msvc(),
+    )
+    .unwrap();
 }
 
 #[test]
@@ -1936,13 +1941,21 @@ fn test_msvc_sal_param() {
 #[test]
 fn test_msvc_sal_param2() {
     use parser::translation_unit;
-    translation_unit("int foo(_Out_writes_bytes_to_(meow, kmeow) void *ptr, _In_ int meow);", &mut Env::with_msvc()).unwrap();
+    translation_unit(
+        "int foo(_Out_writes_bytes_to_(meow, kmeow) void *ptr, _In_ int meow);",
+        &mut Env::with_msvc(),
+    )
+    .unwrap();
 }
 
 #[test]
 fn test_msvc_sal_param3() {
     use parser::translation_unit;
-    translation_unit("int foo(_Out_writes_bytes_to_(meow, return) void *ptr, _In_ int meow);", &mut Env::with_msvc()).unwrap();
+    translation_unit(
+        "int foo(_Out_writes_bytes_to_(meow, return) void *ptr, _In_ int meow);",
+        &mut Env::with_msvc(),
+    )
+    .unwrap();
 }
 
 #[test]
@@ -1960,9 +1973,12 @@ fn test_msvc_sal_function2() {
 #[test]
 fn test_msvc_sal_function3() {
     use parser::translation_unit;
-    translation_unit("_Success_(return >= 0) _Check_return_ int foo();", &mut Env::with_msvc()).unwrap();
+    translation_unit(
+        "_Success_(return >= 0) _Check_return_ int foo();",
+        &mut Env::with_msvc(),
+    )
+    .unwrap();
 }
-
 
 #[test]
 fn test_gnu_extension() {
