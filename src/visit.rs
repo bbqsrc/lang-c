@@ -457,8 +457,20 @@ pub trait Visit<'ast> {
     fn visit_attribute(&mut self, attribute: &'ast Attribute, span: &'ast Span) {
         visit_attribute(self, attribute, span)
     }
-    
-    fn visit_msvc_sal_attribute(&mut self, _attribute: &'ast SalAttribute, _span: &'ast Span) {
+
+    fn visit_msvc_sal_param_attribute(&mut self, _attribute: &'ast SalParamAttribute, _span: &'ast Span) {
+    }
+
+    fn visit_msvc_sal_function_attribute(&mut self, _attribute: &'ast SalFunctionAttribute, _span: &'ast Span) {
+    }
+
+    fn visit_msvc_sal_field_attribute(&mut self, _attribute: &'ast SalFieldAttribute, _span: &'ast Span) {
+    }
+
+    fn visit_msvc_sal_struct_attribute(&mut self, _attribute: &'ast SalStructAttribute, _span: &'ast Span) {
+    }
+
+    fn visit_msvc_calling_convention(&mut self, _convention: &'ast CallingConvention, _span: &'ast Span) {
     }
 
     fn visit_asm_statement(&mut self, asm_statement: &'ast AsmStatement, span: &'ast Span) {
@@ -1469,8 +1481,17 @@ pub fn visit_extension<'ast, V: Visit<'ast> + ?Sized>(
         Extension::AvailabilityAttribute(ref a) => {
             visitor.visit_availability_attribute(&a.node, &a.span)
         }
-        Extension::SalAttribute(ref a) => {
-            visitor.visit_msvc_sal_attribute(a, span)
+        Extension::SalParamAttribute(ref a) => {
+            visitor.visit_msvc_sal_param_attribute(a, span)
+        }
+        Extension::SalFunctionAttribute(ref a) => {
+            visitor.visit_msvc_sal_function_attribute(a, span)
+        }
+        Extension::SalFieldAttribute(ref a) => {
+            visitor.visit_msvc_sal_field_attribute(a, span)
+        }
+        Extension::SalStructAttribute(ref a) => {
+            visitor.visit_msvc_sal_struct_attribute(a, span)
         }
     }
 }

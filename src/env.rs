@@ -10,6 +10,7 @@ pub struct Env {
     pub extensions_clang: bool,
     pub extensions_msvc: bool,
     pub reserved: HashSet<&'static str>,
+    pub(crate) is_ignoring_reserved: bool,
 }
 
 impl Env {
@@ -27,6 +28,7 @@ impl Env {
             extensions_msvc: false,
             typenames: Vec::new(),
             reserved: reserved,
+            is_ignoring_reserved: false,
         }
     }
 
@@ -42,6 +44,7 @@ impl Env {
             extensions_msvc: false,
             typenames: vec![typenames],
             reserved: reserved,
+            is_ignoring_reserved: false,
         }
     }
 
@@ -58,6 +61,7 @@ impl Env {
             extensions_msvc: false,
             typenames: vec![typenames],
             reserved: reserved,
+            is_ignoring_reserved: false,
         }
     }
 
@@ -75,6 +79,7 @@ impl Env {
             extensions_msvc: true,
             typenames: vec![typenames],
             reserved: reserved,
+            is_ignoring_reserved: false,
         }
     }
 
@@ -84,6 +89,10 @@ impl Env {
 
     pub fn leave_scope(&mut self) {
         self.typenames.pop().expect("more scope pops than pushes");
+    }
+
+    pub fn ignore_reserved(&mut self, ignore: bool) {
+        self.is_ignoring_reserved = ignore;
     }
 
     pub fn add_typename(&mut self, s: &str) {

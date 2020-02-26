@@ -685,6 +685,7 @@ fn test_declaration3() {
                             }
                             .into(),
                         ],
+                        extensions: vec![],
                     }
                     .into(),
                     StructField {
@@ -701,9 +702,11 @@ fn test_declaration3() {
                             bit_width: None,
                         }
                         .into()],
+                        extensions: vec![],
                     }
                     .into(),
                 ]),
+                extensions: vec![],
             }
             .into()],
             declarators: vec![InitDeclarator {
@@ -1357,6 +1360,7 @@ fn test_union() {
                             bit_width: None,
                         }
                         .into()],
+                        extensions: vec![],
                     }
                     .into(),
                     StructField {
@@ -1377,9 +1381,11 @@ fn test_union() {
                             bit_width: None,
                         }
                         .into()],
+                        extensions: vec![],
                     }
                     .into(),
                 ]),
+                extensions: vec![],
             }
             .into()],
             declarators: vec![InitDeclarator {
@@ -1442,10 +1448,13 @@ fn test_offsetof() {
                                         bit_width: None,
                                     }
                                     .into()],
+                                    extensions: vec![],
                                 }
                                 .into()]),
+                                extensions: vec![],
                             }
                             .into()],
+                            extensions: vec![],
                             declarators: vec![StructDeclarator {
                                 declarator: Some(
                                     Declarator {
@@ -1464,6 +1473,7 @@ fn test_offsetof() {
                             .into()],
                         }
                         .into()]),
+                        extensions: vec![],
                     }
                     .into()],
                     declarator: None,
@@ -1777,6 +1787,7 @@ fn test_declaration6() {
                                 bit_width: None,
                             }
                             .into()],
+                            extensions: vec![],
                         }
                         .into(),
                         StructField {
@@ -1804,9 +1815,11 @@ fn test_declaration6() {
                                 bit_width: None,
                             }
                             .into()],
+                            extensions: vec![],
                         }
                         .into(),
                     ]),
+                    extensions: vec![],
                 }
                 .into(),
             ],
@@ -1878,6 +1891,12 @@ fn test_msvc_extension() {
 }
 
 #[test]
+fn test_msvc_calling_convention() {
+    use parser::translation_unit;
+    translation_unit("extern int __stdcall test();", &mut Env::with_msvc()).unwrap();
+}
+
+#[test]
 fn test_typedef_msvc() {
     use parser::translation_unit;
     translation_unit("typedef signed __int64 INT64, *PINT64;", &mut Env::with_msvc()).unwrap();
@@ -1902,10 +1921,41 @@ fn test_msvc_forceinline() {
 }
 
 #[test]
-fn test_msvc_sal() {
+fn test_msvc_sal_param() {
     use parser::translation_unit;
     translation_unit("void foo(_In_ void *ptr);", &mut Env::with_msvc()).unwrap();
 }
+
+#[test]
+fn test_msvc_sal_param2() {
+    use parser::translation_unit;
+    translation_unit("int foo(_Out_writes_bytes_to_(meow, kmeow) void *ptr, _In_ int meow);", &mut Env::with_msvc()).unwrap();
+}
+
+#[test]
+fn test_msvc_sal_param3() {
+    use parser::translation_unit;
+    translation_unit("int foo(_Out_writes_bytes_to_(meow, return) void *ptr, _In_ int meow);", &mut Env::with_msvc()).unwrap();
+}
+
+#[test]
+fn test_msvc_sal_function() {
+    use parser::translation_unit;
+    translation_unit("_Check_return_ int foo();", &mut Env::with_msvc()).unwrap();
+}
+
+#[test]
+fn test_msvc_sal_function2() {
+    use parser::translation_unit;
+    translation_unit("_Success_(return >= 0) int foo();", &mut Env::with_msvc()).unwrap();
+}
+
+#[test]
+fn test_msvc_sal_function3() {
+    use parser::translation_unit;
+    translation_unit("_Success_(return >= 0) _Check_return_ int foo();", &mut Env::with_msvc()).unwrap();
+}
+
 
 #[test]
 fn test_gnu_extension() {
@@ -1931,8 +1981,10 @@ fn test_gnu_extension() {
                         bit_width: None,
                     }
                     .into()],
+                    extensions: vec![],
                 }
                 .into()]),
+                extensions: vec![],
             }
             .into()],
             declarators: vec![],
@@ -2125,6 +2177,7 @@ fn test_struct_decl() {
                 kind: StructKind::Struct.into(),
                 identifier: Some(ident("foo")),
                 declarations: None,
+                extensions: vec![],
             }
             .into()],
 
@@ -2160,6 +2213,7 @@ fn test_struct_empty_decl() {
                 kind: StructKind::Struct.into(),
                 identifier: Some(ident("foo")),
                 declarations: Some(Vec::new()),
+                extensions: vec![],
             }
             .into()],
 

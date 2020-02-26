@@ -44,7 +44,7 @@ identifier -> Node<Identifier> = node<identifier0>
 
 identifier0 -> Identifier =
     n:$([_a-zA-Z] [_a-zA-Z0-9]*) {?
-        if !env.reserved.contains(n) {
+        if env.is_ignoring_reserved || !env.reserved.contains(n) {
             Ok(Identifier {
                 name: n.into(),
             })
@@ -461,7 +461,8 @@ declaration_specifier0 -> DeclarationSpecifier =
     s:function_specifier { DeclarationSpecifier::Function(s) } /
     s:alignment_specifier { DeclarationSpecifier::Alignment(s) } /
     s:gnu<attribute_specifier> { DeclarationSpecifier::Extension(s) } /
-    s:msvc<msvc_declspec_specifier> { DeclarationSpecifier::Extension(s) }
+    s:msvc<msvc_declspec_specifier> { DeclarationSpecifier::Extension(s) } /
+    s:msvc<sal_function_annotation> { DeclarationSpecifier::Extension(vec![s]) }
 
 init_declarator -> InitDeclarator =
     d:declarator _ e:gnu<init_declarator_gnu>? _ i:node<init_declarator_init>?
@@ -518,18 +519,22 @@ type_specifier0 -> TypeSpecifier =
     gnu<typeof_specifier>
 
 struct_or_union_specifier -> StructType =
-    t:node<struct_or_union> _ i:identifier? _ d:struct_or_union_body {
+    e:msvc<list0<sal_struct_annotation>>?
+    _ t:node<struct_or_union> _ i:identifier? _ d:struct_or_union_body {
         StructType {
             kind: t,
             identifier: i,
             declarations: d,
+            extensions: e.unwrap_or_default(),
         }
     } /
-    t:node<struct_or_union> _ i:identifier {
+    e:msvc<list0<sal_struct_annotation>>?
+    _ t:node<struct_or_union> _ i:identifier {
         StructType {
             kind: t,
             identifier: Some(i),
             declarations: None,
+            extensions: e.unwrap_or_default(),
         }
     }
 
@@ -548,10 +553,13 @@ struct_declaration -> StructDeclaration =
     gnu<K<"__extension__">> _ d:struct_declaration { d }
 
 struct_field -> StructField =
-    s:list1<specifier_qualifier> _ d:cs0<node<struct_declarator>> _ ";" {
+    e:msvc<list0<sal_field_annotation>>?
+    _ s:list1<specifier_qualifier>
+    _ d:cs0<node<struct_declarator>> _ ";" {
         StructField {
             specifiers: s,
             declarators: d,
+            extensions: e.unwrap_or_default(),
         }
     }
 
@@ -613,7 +621,8 @@ type_qualifier0 -> TypeQualifier =
     clang<K<"_Nonnull">> { TypeQualifier::Nonnull } /
     clang<K<"_Null_unspecified">> { TypeQualifier::NullUnspecified } /
     clang<K<"_Nullable">> { TypeQualifier::Nullable } /
-    K<"_Atomic"> { TypeQualifier::Atomic }
+    K<"_Atomic"> { TypeQualifier::Atomic } /
+    c:msvc<calling_convention> { TypeQualifier::CallingConvention(c) }
 
 ////
 // 6.7.4 Function specifiers
@@ -1048,7 +1057,9 @@ external_declaration -> ExternalDeclaration =
 
 function_definition -> FunctionDefinition =
     gnu<K<"__extension__">>?
-    _ a:list1<declaration_specifier> _ b:declarator _ c:list0<declaration>
+    _ a:list1<declaration_specifier>
+    _ b:declarator
+    _ c:list0<declaration>
     _ d:node<compound_statement> {
         FunctionDefinition {
             specifiers: a,
@@ -1310,22 +1321,107 @@ msvc_guard = {? if env.extensions_msvc { Ok(()) } else { Err("msvc extensions di
 ////
 
 sal_param_annotation0 -> Extension =
-    K<"_In_"> { Extension::SalAttribute(SalAttribute::In) } /
-    K<"_Out_"> { Extension::SalAttribute(SalAttribute::Out) } /
-    K<"_Inout_"> { Extension::SalAttribute(SalAttribute::InOut) } /
-    K<"_Outptr_"> { Extension::SalAttribute(SalAttribute::OutPtr) } /
-    K<"_In_opt_"> { Extension::SalAttribute(SalAttribute::InOpt) } /
-    K<"_Out_opt_"> { Extension::SalAttribute(SalAttribute::OutOpt) } /
-    K<"_Inout_opt_"> { Extension::SalAttribute(SalAttribute::InOutOpt) } /
-    K<"_Outptr_opt_"> { Extension::SalAttribute(SalAttribute::OutPtrOpt) } /
-    K<"_In_reads_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::InReads(p)) } /
-    K<"_In_reads_opt_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::InReadsOpt(p)) } /
-    K<"_In_reads_bytes_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::InReadsBytes(p)) } /
-    K<"_In_reads_bytes_opt_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::InReadsBytesOpt(p)) } /
-    K<"_Out_writes_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::OutWrites(p)) } /
-    K<"_Out_writes_opt_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::OutWritesOpt(p)) } /
-    K<"_Out_writes_bytes_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::OutWritesBytes(p)) } /
-    K<"_Out_writes_bytes_opt_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::OutWritesBytesOpt(p)) } /
-    K<"_Reserved_"> { Extension::SalAttribute(SalAttribute::Reserved) }
+    K<"_In_"> { Extension::SalParamAttribute(SalParamAttribute::In) } /
+    K<"_Out_"> { Extension::SalParamAttribute(SalParamAttribute::Out) } /
+    K<"_Inout_"> { Extension::SalParamAttribute(SalParamAttribute::InOut) } /
+    K<"_Outptr_"> { Extension::SalParamAttribute(SalParamAttribute::OutPtr) } /
+    K<"_Outptr_result_maybenull_"> { Extension::SalParamAttribute(SalParamAttribute::OutPtrResultMaybeNull) } /
+    K<"_Outptr_result_bytebuffer_"> _ "(" _ p:sal_expression _ ")" { Extension::SalParamAttribute(SalParamAttribute::OutPtrResultBytebuffer(p)) } /
+    K<"_In_opt_"> { Extension::SalParamAttribute(SalParamAttribute::InOpt) } /
+    K<"_Out_opt_"> { Extension::SalParamAttribute(SalParamAttribute::OutOpt) } /
+    K<"_Inout_opt_"> { Extension::SalParamAttribute(SalParamAttribute::InOutOpt) } /
+    K<"_Outptr_opt_"> { Extension::SalParamAttribute(SalParamAttribute::OutPtrOpt) } /
+    K<"_In_reads_"> _ "(" _ p:sal_expression _ ")" { Extension::SalParamAttribute(SalParamAttribute::InReads(p)) } /
+    K<"_In_reads_opt_"> _ "(" _ p:sal_expression _ ")" { Extension::SalParamAttribute(SalParamAttribute::InReadsOpt(p)) } /
+    K<"_In_reads_bytes_"> _ "(" _ p:sal_expression _ ")" { Extension::SalParamAttribute(SalParamAttribute::InReadsBytes(p)) } /
+    K<"_In_reads_bytes_opt_"> _ "(" _ p:sal_expression _ ")" { Extension::SalParamAttribute(SalParamAttribute::InReadsBytesOpt(p)) } /
+    K<"_Out_writes_"> _ "(" _ p:sal_expression _ ")" { Extension::SalParamAttribute(SalParamAttribute::OutWrites(p)) } /
+    K<"_Out_writes_opt_"> _ "(" _ p:sal_expression _ ")" { Extension::SalParamAttribute(SalParamAttribute::OutWritesOpt(p)) } /
+    K<"_Out_writes_bytes_"> _ "(" _ p:sal_expression _ ")" { Extension::SalParamAttribute(SalParamAttribute::OutWritesBytes(p)) } /
+    K<"_Out_writes_bytes_opt_"> _ "(" _ p:sal_expression _ ")" { Extension::SalParamAttribute(SalParamAttribute::OutWritesBytesOpt(p)) } /
+    K<"_Inout_updates_"> _ "(" _ p:sal_expression _ ")" { Extension::SalParamAttribute(SalParamAttribute::InOutUpdates(p)) } /
+    K<"_Inout_updates_opt_"> _ "(" _ p:sal_expression _ ")" { Extension::SalParamAttribute(SalParamAttribute::InOutUpdatesOpt(p)) } /
+    K<"_Inout_updates_bytes_"> _ "(" _ p:sal_expression _ ")" { Extension::SalParamAttribute(SalParamAttribute::InOutUpdatesBytes(p)) } /
+    K<"_Inout_updates_bytes_opt_"> _ "(" _ p:sal_expression _ ")" { Extension::SalParamAttribute(SalParamAttribute::InOutUpdatesBytesOpt(p)) } /
+    K<"_Out_writes_to_"> _ "(" _ s:sal_primary_expression _ "," _ c:sal_primary_expression _ ")" {
+        Extension::SalParamAttribute(SalParamAttribute::OutWritesTo(s, c))
+    } /
+    K<"_Out_writes_bytes_to_"> _ "(" _ s:sal_primary_expression _ "," _ c:sal_primary_expression _ ")" {
+        Extension::SalParamAttribute(SalParamAttribute::OutWritesBytesTo(s, c))
+    } /
+    K<"_Reserved_"> { Extension::SalParamAttribute(SalParamAttribute::Reserved) }
 
 sal_param_annotation -> Node<Extension> = node<sal_param_annotation0>
+
+sal_function_annotation0 -> Extension =
+    K<"_Success_"> _ "(" _ e:sal_expression _ ")" { Extension::SalFunctionAttribute(SalFunctionAttribute::Success(e)) } /
+    K<"_Return_type_success_"> _ "(" _ e:sal_expression _ ")" { Extension::SalFunctionAttribute(SalFunctionAttribute::ReturnTypeSuccess(e)) } /
+    K<"_Null_terminated_"> { Extension::SalFunctionAttribute(SalFunctionAttribute::NullTerminated) } /
+    K<"_NullNull_terminated_"> { Extension::SalFunctionAttribute(SalFunctionAttribute::NullNullTerminated) } /
+    K<"_Check_return_"> { Extension::SalFunctionAttribute(SalFunctionAttribute::CheckReturn) } /
+    K<"_Must_inspect_result_"> { Extension::SalFunctionAttribute(SalFunctionAttribute::MustInspectResult) } /
+    K<"_Use_decl_annotations_"> { Extension::SalFunctionAttribute(SalFunctionAttribute::UseDeclAnnotations) } /
+    K<"_Maybe_raises_SEH_exception_"> { Extension::SalFunctionAttribute(SalFunctionAttribute::MaybeRaisesSehException) } /
+    K<"_Raises_SEH_exception_"> { Extension::SalFunctionAttribute(SalFunctionAttribute::RaisesSehException) } /
+    K<"_When_"> _ "(" _ e:$(.+) _ ")" { Extension::SalFunctionAttribute(SalFunctionAttribute::When(e.into())) }
+sal_function_annotation -> Node<Extension> = node<sal_function_annotation0>
+
+sal_field_annotation0 -> Extension =
+    K<"_Field_z_"> { Extension::SalFieldAttribute(SalFieldAttribute::FieldZ) } /
+    K<"_Field_range_"> _ "(" _ s:sal_primary_expression _ "," _ c:sal_primary_expression _ ")" {
+        Extension::SalFieldAttribute(SalFieldAttribute::FieldRange(s, c))
+    } /
+    K<"_Satisfies_"> _ "(" _ e:sal_expression _ ")" {
+        Extension::SalFieldAttribute(SalFieldAttribute::Satisfies(e))
+    } /
+    K<"_Field_size_"> _ "(" _ e:sal_expression _ ")" {
+        Extension::SalFieldAttribute(SalFieldAttribute::FieldSize(e))
+    } /
+    K<"_Field_size_opt_"> _ "(" _ e:sal_expression _ ")" {
+        Extension::SalFieldAttribute(SalFieldAttribute::FieldSizeOpt(e))
+    } /
+    K<"_Field_size_bytes_"> _ "(" _ e:sal_expression _ ")" {
+        Extension::SalFieldAttribute(SalFieldAttribute::FieldSizeBytes(e))
+    } /
+    K<"_Field_size_bytes_opt_"> _ "(" _ e:sal_expression _ ")" {
+        Extension::SalFieldAttribute(SalFieldAttribute::FieldSizeBytesOpt(e))
+    } /
+    K<"_Field_size_part_"> _ "(" _ s:sal_primary_expression _ "," _ c:sal_primary_expression _ ")" {
+        Extension::SalFieldAttribute(SalFieldAttribute::FieldSizePart(s, c))
+    } /
+    K<"_Field_size_part_opt_">_ "(" _ s:sal_primary_expression _ "," _ c:sal_primary_expression _ ")" {
+        Extension::SalFieldAttribute(SalFieldAttribute::FieldSizePartOpt(s, c))
+    } /
+    K<"_Field_size_bytes_part_"> _ "(" _ s:sal_primary_expression _ "," _ c:sal_primary_expression _ ")" {
+        Extension::SalFieldAttribute(SalFieldAttribute::FieldSizeBytesPart(s, c))
+    } /
+    K<"_Field_size_bytes_part_opt_"> _ "(" _ s:sal_primary_expression _ "," _ c:sal_primary_expression _ ")" {
+        Extension::SalFieldAttribute(SalFieldAttribute::FieldSizeBytesPartOpt(s, c))
+    } /
+    K<"_Field_size_full_"> _ "(" _ e:sal_expression _ ")" {
+        Extension::SalFieldAttribute(SalFieldAttribute::FieldSizeFull(e))
+    } /
+    K<"_Field_size_full_opt_"> _ "(" _ e:sal_expression _ ")" {
+        Extension::SalFieldAttribute(SalFieldAttribute::FieldSizeFullOpt(e))
+    } /
+    K<"_Field_size_bytes_full_"> _ "(" _ e:sal_expression _ ")" {
+        Extension::SalFieldAttribute(SalFieldAttribute::FieldSizeBytesFull(e))
+    } /
+    K<"_Field_size_bytes_full_opt_"> _ "(" _ e:sal_expression _ ")" {
+        Extension::SalFieldAttribute(SalFieldAttribute::FieldSizeBytesFullOpt(e))
+    }
+sal_field_annotation -> Node<Extension> = node<sal_field_annotation0>
+
+sal_struct_annotation0 -> Extension =
+    K<"_Struct_size_bytes_"> _ "(" _ e:sal_expression _ ")" {
+        Extension::SalStructAttribute(SalStructAttribute::StructSizeBytes(e))
+    }
+sal_struct_annotation -> Node<Extension> = node<sal_struct_annotation0>
+
+calling_convention -> CallingConvention =
+    K<"__cdecl"> { CallingConvention::Cdecl } /
+    K<"__stdcall"> { CallingConvention::Stdcall }
+
+sal_ignore_reserved<e> = ({ env.ignore_reserved(true); }) e:e {? env.ignore_reserved(false); Ok(e) }
+sal_expression -> Node<Expression> = e:sal_ignore_reserved<expression> { *e }
+sal_primary_expression -> Node<Expression> = e:sal_ignore_reserved<primary_expression> { *e }

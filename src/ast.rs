@@ -661,6 +661,7 @@ pub struct StructType {
     ///
     /// A [GNU extension](https://gcc.gnu.org/onlinedocs/gcc-8.1.0/gcc/Empty-Structures.html) allows the list to be empty.
     pub declarations: Option<Vec<Node<StructDeclaration>>>,
+    pub extensions: Vec<Node<Extension>>,
 }
 
 /// The only difference between a `struct` and a `union`
@@ -686,6 +687,7 @@ pub enum StructDeclaration {
 pub struct StructField {
     pub specifiers: Vec<Node<SpecifierQualifier>>,
     pub declarators: Vec<Node<StructDeclarator>>,
+    pub extensions: Vec<Node<Extension>>,
 }
 
 /// Type and qualifiers for a struct declaration
@@ -761,6 +763,10 @@ pub enum TypeQualifier {
     Nullable,
     /// `_Atomic`
     Atomic,
+    /// Calling convention
+    /// 
+    /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/cpp/calling-conventions)
+    CallingConvention(CallingConvention),
 }
 
 // From 6.7.4
@@ -1156,10 +1162,41 @@ pub enum Extension {
     ///
     /// [Clang extension](https://clang.llvm.org/docs/AttributeReference.html#availability)
     AvailabilityAttribute(Node<AvailabilityAttribute>),
-    /// Source-code annotation language (SAL) attribute
+    /// Source-code annotation language (SAL) parameter attribute
     /// 
     /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
-    SalAttribute(SalAttribute),
+    SalParamAttribute(SalParamAttribute),
+    /// Source-code annotation language (SAL) function attribute
+    /// 
+    /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
+    SalFunctionAttribute(SalFunctionAttribute),
+    /// Source-code annotation language (SAL) field attribute
+    /// 
+    /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
+    SalFieldAttribute(SalFieldAttribute),
+    /// Source-code annotation language (SAL) struct attribute
+    /// 
+    /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
+    SalStructAttribute(SalStructAttribute),
+}
+
+/// Calling convention
+/// 
+/// [MSVC extension](https://docs.microsoft.com/en-us/cpp/cpp/calling-conventions)
+#[derive(Debug, PartialEq, Clone)]
+pub enum CallingConvention {
+    // __cdecl
+    Cdecl,
+    // __fastcall,
+    Fastcall,
+    // __stdcall
+    Stdcall,
+    // __clrcall
+    Clrcall,
+    // __thiscall
+    Thiscall,
+    // __vectorcall
+    Vectorcall,
 }
 
 /// Attributes
@@ -1171,27 +1208,90 @@ pub struct Attribute {
     pub arguments: Vec<Node<Expression>>,
 }
 
-/// Source-code annotation language (SAL) attribute
+/// Source-code annotation language (SAL) struct attribute
 /// 
 /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
 #[derive(Debug, PartialEq, Clone)]
-pub enum SalAttribute {
+pub enum SalStructAttribute {
+    StructSizeBytes(Node<Expression>),
+}
+
+/// Source-code annotation language (SAL) field attribute
+/// 
+/// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
+#[derive(Debug, PartialEq, Clone)]
+pub enum SalFieldAttribute {
+    FieldRange(Node<Expression>, Node<Expression>),
+    FieldZ,
+    Satisfies(Node<Expression>),
+    FieldSize(Node<Expression>),
+    FieldSizeOpt(Node<Expression>),
+    FieldSizeBytes(Node<Expression>),
+    FieldSizeBytesOpt(Node<Expression>),
+    FieldSizePart(Node<Expression>, Node<Expression>),
+    FieldSizePartOpt(Node<Expression>, Node<Expression>),
+    FieldSizeBytesPart(Node<Expression>, Node<Expression>),
+    FieldSizeBytesPartOpt(Node<Expression>, Node<Expression>),
+    FieldSizeFull(Node<Expression>),
+    FieldSizeFullOpt(Node<Expression>),
+    FieldSizeBytesFull(Node<Expression>),
+    FieldSizeBytesFullOpt(Node<Expression>),
+}
+
+/// Source-code annotation language (SAL) function attribute
+/// 
+/// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
+#[derive(Debug, PartialEq, Clone)]
+pub enum SalFunctionAttribute {
+    /// _Success_(<expr>)
+    Success(Node<Expression>),
+    /// _Return_type_success_(<expr>)
+    ReturnTypeSuccess(Node<Expression>),
+    /// _Check_return_
+    CheckReturn,
+    /// _Null_terminated_
+    NullTerminated,
+    NullNullTerminated,
+    MustInspectResult,
+    UseDeclAnnotations,
+    MaybeRaisesSehException,
+    RaisesSehException,
+    When(String),
+    // At(Node<Expression>),
+}
+
+/// Source-code annotation language (SAL) parameter attribute
+/// 
+/// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
+#[derive(Debug, PartialEq, Clone)]
+pub enum SalParamAttribute {
+    /// _In_
     In,
+    /// _Out_
     Out,
     OutPtr,
+    OutPtrResultMaybeNull,
+    OutPtrResultBytebuffer(Node<Expression>),
     InOut,
-    InReads(Node<Identifier>),
-    InReadsOpt(Node<Identifier>),
-    InReadsBytes(Node<Identifier>),
-    InReadsBytesOpt(Node<Identifier>),
-    OutWrites(Node<Identifier>),
-    OutWritesOpt(Node<Identifier>),
-    OutWritesBytes(Node<Identifier>),
-    OutWritesBytesOpt(Node<Identifier>),
+    InReads(Node<Expression>),
+    InReadsOpt(Node<Expression>),
+    InReadsBytes(Node<Expression>),
+    InReadsBytesOpt(Node<Expression>),
+    OutWrites(Node<Expression>),
+    OutWritesOpt(Node<Expression>),
+    OutWritesBytes(Node<Expression>),
+    OutWritesBytesOpt(Node<Expression>),
+    OutWritesTo(Node<Expression>, Node<Expression>),
+    OutWritesBytesTo(Node<Expression>, Node<Expression>),
+    InOutUpdates(Node<Expression>),
+    InOutUpdatesOpt(Node<Expression>),
+    InOutUpdatesBytes(Node<Expression>),
+    InOutUpdatesBytesOpt(Node<Expression>),
     InOpt,
     OutOpt,
     OutPtrOpt,
     InOutOpt,
+    NullTerminated,
     Reserved,
 }
 
