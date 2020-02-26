@@ -1156,6 +1156,10 @@ pub enum Extension {
     ///
     /// [Clang extension](https://clang.llvm.org/docs/AttributeReference.html#availability)
     AvailabilityAttribute(Node<AvailabilityAttribute>),
+    /// Source-code annotation language (SAL) attribute
+    /// 
+    /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
+    SalAttribute(SalAttribute),
 }
 
 /// Attributes
@@ -1165,6 +1169,30 @@ pub enum Extension {
 pub struct Attribute {
     pub name: Node<String>,
     pub arguments: Vec<Node<Expression>>,
+}
+
+/// Source-code annotation language (SAL) attribute
+/// 
+/// [MSVC extension](https://docs.microsoft.com/en-us/cpp/code-quality/understanding-sal)
+#[derive(Debug, PartialEq, Clone)]
+pub enum SalAttribute {
+    In,
+    Out,
+    OutPtr,
+    InOut,
+    InReads(Node<Identifier>),
+    InReadsOpt(Node<Identifier>),
+    InReadsBytes(Node<Identifier>),
+    InReadsBytesOpt(Node<Identifier>),
+    OutWrites(Node<Identifier>),
+    OutWritesOpt(Node<Identifier>),
+    OutWritesBytes(Node<Identifier>),
+    OutWritesBytesOpt(Node<Identifier>),
+    InOpt,
+    OutOpt,
+    OutPtrOpt,
+    InOutOpt,
+    Reserved,
 }
 
 /// Platform availability attribute

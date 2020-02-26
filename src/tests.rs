@@ -1900,6 +1900,13 @@ fn test_msvc_forceinline() {
     use parser::translation_unit;
     translation_unit("__forceinline void foo();", &mut Env::with_msvc()).unwrap();
 }
+
+#[test]
+fn test_msvc_sal() {
+    use parser::translation_unit;
+    translation_unit("void foo(_In_ void *ptr);", &mut Env::with_msvc()).unwrap();
+}
+
 #[test]
 fn test_gnu_extension() {
     use ast::TypeSpecifier::Long;

@@ -457,6 +457,9 @@ pub trait Visit<'ast> {
     fn visit_attribute(&mut self, attribute: &'ast Attribute, span: &'ast Span) {
         visit_attribute(self, attribute, span)
     }
+    
+    fn visit_msvc_sal_attribute(&mut self, _attribute: &'ast SalAttribute, _span: &'ast Span) {
+    }
 
     fn visit_asm_statement(&mut self, asm_statement: &'ast AsmStatement, span: &'ast Span) {
         visit_asm_statement(self, asm_statement, span)
@@ -1465,6 +1468,9 @@ pub fn visit_extension<'ast, V: Visit<'ast> + ?Sized>(
         Extension::AsmLabel(ref a) => visitor.visit_string_literal(&a.node, &a.span),
         Extension::AvailabilityAttribute(ref a) => {
             visitor.visit_availability_attribute(&a.node, &a.span)
+        }
+        Extension::SalAttribute(ref a) => {
+            visitor.visit_msvc_sal_attribute(a, span)
         }
     }
 }

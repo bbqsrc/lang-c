@@ -720,11 +720,14 @@ ellipsis -> Ellipsis =
 parameter_declaration -> Node<ParameterDeclaration> = node<parameter_declaration0>
 
 parameter_declaration0 -> ParameterDeclaration =
-    s:list1<declaration_specifier> _ d:parameter_declarator _ a:gnu<attribute_specifier_list>? {
+    b:msvc<sal_param_annotation>?
+    _ s:list1<declaration_specifier>
+    _ d:parameter_declarator
+    _ a:gnu<attribute_specifier_list>? {
         ParameterDeclaration {
             specifiers: s,
             declarator: d,
-            extensions: a.unwrap_or_default()
+            extensions: a.unwrap_or_else(|| b.map(|x| vec![x]).unwrap_or_else(|| vec![]))
         }
     }
 
@@ -1301,3 +1304,28 @@ clang_guard = {? if env.extensions_clang { Ok(()) } else { Err("clang extensions
 msvc<E> = &msvc_guard e:E { e }
 
 msvc_guard = {? if env.extensions_msvc { Ok(()) } else { Err("msvc extensions disabled") } }
+
+////
+// MSVC source-code annotation language (SAL) extensions
+////
+
+sal_param_annotation0 -> Extension =
+    K<"_In_"> { Extension::SalAttribute(SalAttribute::In) } /
+    K<"_Out_"> { Extension::SalAttribute(SalAttribute::Out) } /
+    K<"_Inout_"> { Extension::SalAttribute(SalAttribute::InOut) } /
+    K<"_Outptr_"> { Extension::SalAttribute(SalAttribute::OutPtr) } /
+    K<"_In_opt_"> { Extension::SalAttribute(SalAttribute::InOpt) } /
+    K<"_Out_opt_"> { Extension::SalAttribute(SalAttribute::OutOpt) } /
+    K<"_Inout_opt_"> { Extension::SalAttribute(SalAttribute::InOutOpt) } /
+    K<"_Outptr_opt_"> { Extension::SalAttribute(SalAttribute::OutPtrOpt) } /
+    K<"_In_reads_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::InReads(p)) } /
+    K<"_In_reads_opt_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::InReadsOpt(p)) } /
+    K<"_In_reads_bytes_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::InReadsBytes(p)) } /
+    K<"_In_reads_bytes_opt_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::InReadsBytesOpt(p)) } /
+    K<"_Out_writes_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::OutWrites(p)) } /
+    K<"_Out_writes_opt_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::OutWritesOpt(p)) } /
+    K<"_Out_writes_bytes_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::OutWritesBytes(p)) } /
+    K<"_Out_writes_bytes_opt_"> _ "(" _ p:identifier _ ")" { Extension::SalAttribute(SalAttribute::OutWritesBytesOpt(p)) } /
+    K<"_Reserved_"> { Extension::SalAttribute(SalAttribute::Reserved) }
+
+sal_param_annotation -> Node<Extension> = node<sal_param_annotation0>
