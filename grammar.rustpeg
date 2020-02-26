@@ -622,7 +622,8 @@ type_qualifier0 -> TypeQualifier =
 function_specifier -> Node<FunctionSpecifier> = node<function_specifier0>
 
 function_specifier0 -> FunctionSpecifier =
-    K<"inline" / gnu<"__inline" "__"?>> { FunctionSpecifier::Inline } /
+    K<"inline" / gnu<"__inline" "__"?> / msvc<"__inline">> { FunctionSpecifier::Inline } /
+    K<msvc<"__forceinline">> { FunctionSpecifier::ForceInline } /
     K<"_Noreturn"> { FunctionSpecifier::Noreturn }
 
 ////

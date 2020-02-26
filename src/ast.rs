@@ -776,6 +776,8 @@ pub enum FunctionSpecifier {
     Inline,
     /// `_Noreturn`
     Noreturn,
+    /// `__forceinline` [MSVC extension](https://docs.microsoft.com/en-us/cpp/cpp/inline-functions-cpp)
+    ForceInline,
 }
 
 // From 6.7.5

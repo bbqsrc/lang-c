@@ -1884,6 +1884,17 @@ fn test_msvc_unaligned() {
 }
 
 #[test]
+fn test_msvc_inline() {
+    use parser::translation_unit;
+    translation_unit("__inline void foo();", &mut Env::with_msvc()).unwrap();
+}
+
+#[test]
+fn test_msvc_forceinline() {
+    use parser::translation_unit;
+    translation_unit("__forceinline void foo();", &mut Env::with_msvc()).unwrap();
+}
+#[test]
 fn test_gnu_extension() {
     use ast::TypeSpecifier::Long;
     use parser::translation_unit;
