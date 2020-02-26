@@ -1878,6 +1878,12 @@ fn test_msvc_extension() {
 }
 
 #[test]
+fn test_msvc_unaligned() {
+    use parser::translation_unit;
+    translation_unit("typedef void __unaligned *LPUWSTR;", &mut Env::with_msvc()).unwrap();
+}
+
+#[test]
 fn test_gnu_extension() {
     use ast::TypeSpecifier::Long;
     use parser::translation_unit;

@@ -789,6 +789,8 @@ pub enum AlignmentSpecifier {
     Type(Node<TypeName>),
     /// `_Alignas(expression)`
     Constant(Box<Node<Expression>>),
+    /// [MSVC extension](https://docs.microsoft.com/en-us/cpp/cpp/unaligned?view=vs-2019) `__unaligned`
+    Unaligned,
 }
 
 // From 6.7.6 Declarators

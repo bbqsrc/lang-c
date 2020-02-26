@@ -487,6 +487,8 @@ pub trait Visit<'ast> {
     fn visit_type_of(&mut self, type_of: &'ast TypeOf, span: &'ast Span) {
         visit_type_of(self, type_of, span)
     }
+
+    fn visit_msvc_unaligned(&mut self) {}
 }
 
 pub fn visit_identifier<'ast, V: Visit<'ast> + ?Sized>(
@@ -1055,6 +1057,7 @@ pub fn visit_alignment_specifier<'ast, V: Visit<'ast> + ?Sized>(
     match *alignment_specifier {
         AlignmentSpecifier::Type(ref t) => visitor.visit_type_name(&t.node, &t.span),
         AlignmentSpecifier::Constant(ref c) => visitor.visit_expression(&c.node, &c.span),
+        AlignmentSpecifier::Unaligned => visitor.visit_msvc_unaligned(),
     }
 }
 

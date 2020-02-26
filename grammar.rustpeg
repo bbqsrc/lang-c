@@ -633,7 +633,8 @@ alignment_specifier -> Node<AlignmentSpecifier> = node<alignment_specifier0>
 
 alignment_specifier0 -> AlignmentSpecifier =
     K<"_Alignas"> _ "(" _ t:type_name _ ")" { AlignmentSpecifier::Type(t) } /
-    K<"_Alignas"> _ "(" _ e:constant_expression _ ")" { AlignmentSpecifier::Constant(e) }
+    K<"_Alignas"> _ "(" _ e:constant_expression _ ")" { AlignmentSpecifier::Constant(e) } /
+    msvc<K<"__unaligned">> { AlignmentSpecifier::Unaligned }
 
 ////
 // 6.7.6 Declarators
