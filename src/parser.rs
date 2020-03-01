@@ -122,28 +122,61 @@ fn __parse__<'input>(__input: &'input str, __state: &mut ParseState<'input>, __p
     {
         __state.suppress_fail += 1;
         let res = {
-            let mut __repeat_pos = __pos;
-            loop {
-                let __pos = __repeat_pos;
-                let __step_res = if __input.len() > __pos {
-                    let (__ch, __next) = char_range_at(__input, __pos);
-                    match __ch {
-                        ' ' | '\t' => Matched(__next, ()),
-                        _ => __state.mark_failure(__pos, "[ \t]"),
+            let __seq_res = {
+                let str_start = __pos;
+                match {
+                    let mut __repeat_pos = __pos;
+                    loop {
+                        let __pos = __repeat_pos;
+                        let __step_res = {
+                            let __choice_res = slice_eq(__input, __state, __pos, "\n");
+                            match __choice_res {
+                                Matched(__pos, __value) => Matched(__pos, __value),
+                                Failed => {
+                                    if __input.len() > __pos {
+                                        let (__ch, __next) = char_range_at(__input, __pos);
+                                        match __ch {
+                                            ' ' | '\t' => Matched(__next, ()),
+                                            _ => __state.mark_failure(__pos, "[ \t]"),
+                                        }
+                                    } else {
+                                        __state.mark_failure(__pos, "[ \t]")
+                                    }
+                                }
+                            }
+                        };
+                        match __step_res {
+                            Matched(__newpos, __value) => {
+                                __repeat_pos = __newpos;
+                            }
+                            Failed => {
+                                break;
+                            }
+                        }
                     }
-                } else {
-                    __state.mark_failure(__pos, "[ \t]")
-                };
-                match __step_res {
-                    Matched(__newpos, __value) => {
-                        __repeat_pos = __newpos;
-                    }
-                    Failed => {
-                        break;
+                    Matched(__repeat_pos, ())
+                } {
+                    Matched(__newpos, _) => Matched(__newpos, &__input[str_start..__newpos]),
+                    Failed => Failed,
+                }
+            };
+            match __seq_res {
+                Matched(__pos, e) => {
+                    match {
+                        if env.is_single_line_mode && e.contains("\n") {
+                            return RuleResult::Failed;
+                        }
+                        Ok(())
+                    } {
+                        Ok(res) => Matched(__pos, res),
+                        Err(expected) => {
+                            __state.mark_failure(__pos, expected);
+                            Failed
+                        }
                     }
                 }
+                Failed => Failed,
             }
-            Matched(__repeat_pos, ())
         };
         __state.suppress_fail -= 1;
         res

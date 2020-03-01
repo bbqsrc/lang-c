@@ -11,6 +11,7 @@ pub struct Env {
     pub extensions_msvc: bool,
     pub reserved: HashSet<&'static str>,
     pub(crate) is_ignoring_reserved: bool,
+    pub(crate) is_single_line_mode: bool,
 }
 
 impl Env {
@@ -29,6 +30,7 @@ impl Env {
             typenames: Vec::new(),
             reserved: reserved,
             is_ignoring_reserved: false,
+            is_single_line_mode: false,
         }
     }
 
@@ -45,6 +47,7 @@ impl Env {
             typenames: vec![typenames],
             reserved: reserved,
             is_ignoring_reserved: false,
+            is_single_line_mode: false,
         }
     }
 
@@ -62,6 +65,7 @@ impl Env {
             typenames: vec![typenames],
             reserved: reserved,
             is_ignoring_reserved: false,
+            is_single_line_mode: false,
         }
     }
 
@@ -80,6 +84,7 @@ impl Env {
             typenames: vec![typenames],
             reserved: reserved,
             is_ignoring_reserved: false,
+            is_single_line_mode: false,
         }
     }
 
@@ -93,6 +98,10 @@ impl Env {
 
     pub fn ignore_reserved(&mut self, ignore: bool) {
         self.is_ignoring_reserved = ignore;
+    }
+
+    pub fn single_line_mode(&mut self, enable: bool) {
+        self.is_single_line_mode = enable;
     }
 
     pub fn add_typename(&mut self, s: &str) {

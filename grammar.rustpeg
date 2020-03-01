@@ -25,7 +25,12 @@ cs1<ex> = e:ex ++ (_ "," _) { e }
 // Whitespace
 ////
 
-_ = #quiet<("\n" / [ \t])*>
+_ = #quiet<e:$("\n" / [ \t])* {?
+    if env.is_single_line_mode && e.contains("\n") {
+        return RuleResult::Failed;
+    }
+    Ok(())
+}>
 
 directive -> Directive = "#" d:$([^\n]*) {
     Directive { value: d.into() }

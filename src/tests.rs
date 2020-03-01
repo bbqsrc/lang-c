@@ -1342,6 +1342,17 @@ fn test_gnu_asm() {
 }
 
 #[test]
+fn test_single_line_expr() {
+    use parser::constant_expression;
+
+    let mut env = Env::with_core();
+    env.single_line_mode(true);
+
+    assert!(constant_expression("42 == 43", &mut env).is_ok());
+    assert!(constant_expression("42 ==\n43", &mut env).is_err());
+}
+
+#[test]
 fn test_union() {
     use self::int::dec;
     use ast::ArraySize::VariableExpression;
