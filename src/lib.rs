@@ -16,9 +16,9 @@ pub mod driver;
 pub mod span;
 pub mod visit;
 pub mod parser;
+pub mod env;
 
 mod astutil;
-mod env;
 mod strings;
 
 #[cfg(test)]
