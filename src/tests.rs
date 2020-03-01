@@ -1285,23 +1285,29 @@ fn test_directives() {
         translation_unit(
             r#"# 1 "<stdin>"
 # 1 "<built-in>"
-# 1 "<command-line>"
-# 31 "<command-line>"
-# 1 "/usr/include/stdc-predef.h" 1 3 4
-# 32 "<command-line>" 2
-# 1 "<stdin>"
 "#,
             &mut Env::new()
         ),
-        Ok(TranslationUnit(vec![Node {
-            node: ExternalDeclaration::Directive(Node {
-                node: Directive {
-                    value: " 1 \"<stdin>\"".into()
-                },
+        Ok(TranslationUnit(vec![
+            Node {
+                node: ExternalDeclaration::Directive(Node {
+                    node: Directive {
+                        value: " 1 \"<stdin>\"".into()
+                    },
+                    span: Span::none()
+                }),
                 span: Span::none()
-            }),
-            span: Span::none()
-        }]))
+            },
+            Node {
+                node: ExternalDeclaration::Directive(Node {
+                    node: Directive {
+                        value: " 1 \"<built-in>\"".into()
+                    },
+                    span: Span::none()
+                }),
+                span: Span::none()
+            }
+        ]))
     );
 }
 

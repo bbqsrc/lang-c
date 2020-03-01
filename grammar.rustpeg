@@ -25,7 +25,7 @@ cs1<ex> = e:ex ++ (_ "," _) { e }
 // Whitespace
 ////
 
-_ = #quiet<("\n" directive? / [ \t])*>
+_ = #quiet<("\n" / [ \t])*>
 
 directive -> Directive = "#" d:$([^\n]*) {
     Directive { value: d.into() }

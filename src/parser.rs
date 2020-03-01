@@ -125,36 +125,14 @@ fn __parse__<'input>(__input: &'input str, __state: &mut ParseState<'input>, __p
             let mut __repeat_pos = __pos;
             loop {
                 let __pos = __repeat_pos;
-                let __step_res = {
-                    let __choice_res = {
-                        let __seq_res = slice_eq(__input, __state, __pos, "\n");
-                        match __seq_res {
-                            Matched(__pos, _) => {
-                                match match __parse_directive(__input, __state, __pos, env) {
-                                    Matched(pos, _) => Matched(pos, ()),
-                                    Failed => Failed,
-                                } {
-                                    Matched(__newpos, _) => Matched(__newpos, ()),
-                                    Failed => Matched(__pos, ()),
-                                }
-                            }
-                            Failed => Failed,
-                        }
-                    };
-                    match __choice_res {
-                        Matched(__pos, __value) => Matched(__pos, __value),
-                        Failed => {
-                            if __input.len() > __pos {
-                                let (__ch, __next) = char_range_at(__input, __pos);
-                                match __ch {
-                                    ' ' | '\t' => Matched(__next, ()),
-                                    _ => __state.mark_failure(__pos, "[ \t]"),
-                                }
-                            } else {
-                                __state.mark_failure(__pos, "[ \t]")
-                            }
-                        }
+                let __step_res = if __input.len() > __pos {
+                    let (__ch, __next) = char_range_at(__input, __pos);
+                    match __ch {
+                        ' ' | '\t' => Matched(__next, ()),
+                        _ => __state.mark_failure(__pos, "[ \t]"),
                     }
+                } else {
+                    __state.mark_failure(__pos, "[ \t]")
                 };
                 match __step_res {
                     Matched(__newpos, __value) => {
