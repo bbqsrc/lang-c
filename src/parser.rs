@@ -20892,6 +20892,21 @@ fn __parse_sal_primary_expression<'input>(__input: &'input str, __state: &mut Pa
     }
 }
 
+pub fn identifier<'input>(__input: &'input str, env: &mut Env) -> ParseResult<Node<Identifier>> {
+    #![allow(non_snake_case, unused)]
+    let mut __state = ParseState::new();
+    match __parse_identifier(__input, &mut __state, 0, env) {
+        Matched(__pos, __value) => {
+            if __pos == __input.len() {
+                return Ok(__value);
+            }
+        }
+        _ => {}
+    }
+    let (__line, __col) = pos_to_line(__input, __state.max_err_pos);
+    Err(ParseError { line: __line, column: __col, offset: __state.max_err_pos, expected: __state.expected })
+}
+
 pub fn constant<'input>(__input: &'input str, env: &mut Env) -> ParseResult<Constant> {
     #![allow(non_snake_case, unused)]
     let mut __state = ParseState::new();
@@ -20926,6 +20941,21 @@ pub fn expression<'input>(__input: &'input str, env: &mut Env) -> ParseResult<Bo
     #![allow(non_snake_case, unused)]
     let mut __state = ParseState::new();
     match __parse_expression(__input, &mut __state, 0, env) {
+        Matched(__pos, __value) => {
+            if __pos == __input.len() {
+                return Ok(__value);
+            }
+        }
+        _ => {}
+    }
+    let (__line, __col) = pos_to_line(__input, __state.max_err_pos);
+    Err(ParseError { line: __line, column: __col, offset: __state.max_err_pos, expected: __state.expected })
+}
+
+pub fn constant_expression<'input>(__input: &'input str, env: &mut Env) -> ParseResult<Box<Node<Expression>>> {
+    #![allow(non_snake_case, unused)]
+    let mut __state = ParseState::new();
+    match __parse_constant_expression(__input, &mut __state, 0, env) {
         Matched(__pos, __value) => {
             if __pos == __input.len() {
                 return Ok(__value);

@@ -15,10 +15,10 @@ pub mod ast;
 pub mod driver;
 pub mod span;
 pub mod visit;
+pub mod parser;
 
 mod astutil;
 mod env;
-mod parser;
 mod strings;
 
 #[cfg(test)]

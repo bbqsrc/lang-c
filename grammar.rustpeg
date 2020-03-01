@@ -42,7 +42,7 @@ K<E> = #quiet<e:E ![_a-zA-Z0-9] { e }>
 ////
 
 // Identifiers.
-identifier -> Node<Identifier> = node<identifier0>
+pub identifier -> Node<Identifier> = node<identifier0>
 
 identifier0 -> Identifier =
     n:$([_a-zA-Z] [_a-zA-Z0-9]*) {?
@@ -434,7 +434,7 @@ expressionT -> Node<Expression> =
 // 6.6 Constant expressions
 ////
 
-constant_expression -> Box<Node<Expression>> = conditional_expression
+pub constant_expression -> Box<Node<Expression>> = conditional_expression
 constant_expression0 -> Expression = conditional_expression0
 
 ////
