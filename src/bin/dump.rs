@@ -12,7 +12,10 @@ fn main() {
     let mut quiet = false;
 
     for opt in std::env::args().skip(1) {
-        if opt == "-use-gcc" {
+        if opt == "-use-msvc" {
+            config = Config::with_clang();
+            config.flavor = lang_c::driver::Flavor::MsvcC11;
+        } else if opt == "-use-gcc" {
             config = Config::with_gcc();
         } else if opt == "-use-clang" {
             config = Config::with_clang();
